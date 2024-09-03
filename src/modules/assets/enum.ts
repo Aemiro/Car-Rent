@@ -1,0 +1,5 @@
+export enum VehicleStatus {
+  AVAILABLE = 'AVAILABLE',
+  RENTED = 'RENTED',
+  UNDER_MAINTENANCE = 'UNDER_MAINTENANCE',
+}
