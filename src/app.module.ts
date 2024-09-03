@@ -38,7 +38,6 @@ import { FinanceModule } from '@finance/finance.module';
 import { RevenueEntity } from '@finance/persistence/revenues/revenue.entity';
 import { ExpenseEntity } from '@finance/persistence/expenses/expense.entity';
 dotenv.config({ path: '.env' });
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -55,6 +54,15 @@ dotenv.config({ path: '.env' });
       database: process.env.DATABASE_NAME,
       schema: process.env.DATABASE_SCHEMA,
       port: parseInt(process.env.DATABASE_PORT),
+      // ssl: true,
+      extra: {
+        ssl: {
+          rejectUnauthorized: false,
+
+          // ca: fs.readFileSync('ca.pem').toString(),
+          ca: process.env.DBSSL_CERT,
+        },
+      },
       entities: [
         UserEntity,
         RoleEntity,
@@ -83,7 +91,7 @@ dotenv.config({ path: '.env' });
         RevenueEntity,
         ExpenseEntity,
       ],
-      synchronize: process.env.NODE_ENV === 'production' ? false : true,
+      // synchronize: process.env.NODE_ENV === 'production' ? false : true,
       logging: process.env.NODE_ENV === 'production' ? false : true,
     }),
     UserModule,
