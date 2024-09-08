@@ -41,7 +41,6 @@ import {
   UpdateUserDocumentCommand,
   RemoveUserDocumentCommand,
 } from '@user/usecases/users/user-document.command';
-
 @Controller('users')
 @ApiTags('users')
 @ApiResponse({ status: 500, description: 'Internal error' })

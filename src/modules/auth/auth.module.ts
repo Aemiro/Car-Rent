@@ -32,5 +32,6 @@ import { UserRoleEntity } from './persistence/accounts/user-role.entity';
     AuthService,
     JwtStrategy,
   ],
+  exports: [AccountCommand],
 })
 export class AuthModule {}

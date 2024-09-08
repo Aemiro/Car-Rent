@@ -17,7 +17,7 @@ import {
   RemoveTenantContactCommand,
   UpdateTenantContactCommand,
 } from './tenant-contact.command';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+// import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateAccountCommand } from '@auth/usecases/accounts/account.commands';
 import { Util } from '@lib/common/util';
 import {
@@ -25,11 +25,13 @@ import {
   UpdateTenantDocumentCommand,
   RemoveTenantDocumentCommand,
 } from './tenant-document.command';
+import { AccountCommand } from '@auth/usecases/accounts/account.usecase.commands';
 @Injectable()
 export class TenantCommand {
   constructor(
     private readonly tenantRepository: TenantRepository,
-    private eventEmitter: EventEmitter2,
+    // private eventEmitter: EventEmitter2,
+    private readonly accountCommand: AccountCommand,
   ) {}
   async createTenant(command: CreateTenantCommand): Promise<TenantResponse> {
     if (await this.tenantRepository.getOneBy('name', command.name, [], true)) {
@@ -73,7 +75,8 @@ export class TenantCommand {
       createAccountCommand.address = command.address;
       createAccountCommand.gender = null;
       createAccountCommand.password = Util.hashPassword(password);
-      this.eventEmitter.emit('create.account', createAccountCommand);
+      // this.eventEmitter.emit('create.account', createAccountCommand);
+      await this.accountCommand.createAccount(createAccountCommand);
     }
     return TenantResponse.toResponse(tenant);
   }
@@ -135,15 +138,25 @@ export class TenantCommand {
     tenant.updatedBy = command?.currentUser?.id;
     const result = await this.tenantRepository.save(tenant);
     if (tenant) {
-      this.eventEmitter.emit('update.account', {
+      // this.eventEmitter.emit('update.account', {
+      //   accountId: tenant.id,
+      //   name: command.name,
+      //   email: tenant.email,
+      //   type: 'Employee',
+      //   phone: tenant.phone,
+      //   address: tenant.address,
+      //   gender: null,
+      //   profilePicture: tenant.logo,
+      // });
+      this.accountCommand.updateAccount({
         accountId: tenant.id,
         name: command.name,
         email: tenant.email,
-        type: 'Employee',
         phone: tenant.phone,
         address: tenant.address,
         gender: null,
         profilePicture: tenant.logo,
+        isActive:tenant.isActive
       });
     }
     return TenantResponse.toResponse(result);
@@ -157,8 +170,12 @@ export class TenantCommand {
     tenantDomain.deletedBy = command?.currentUser?.id;
     const result = await this.tenantRepository.save(tenantDomain);
     if (result) {
-      this.eventEmitter.emit('account.archived', {
-        phone: tenantDomain.phone,
+      // this.eventEmitter.emit('account.archived', {
+      //   phone: tenantDomain.phone,
+      //   id: tenantDomain.id,
+      // });
+      await this.accountCommand.handleArchiveAccount({
+        phoneNumber: tenantDomain.phone,
         id: tenantDomain.id,
       });
     }
@@ -176,10 +193,14 @@ export class TenantCommand {
 
     if (result) {
       tenantDomain.deletedAt = null;
-      this.eventEmitter.emit('account.restored', {
-        phone: tenantDomain.phone,
+      // this.eventEmitter.emit('account.restored', {
+      //   phone: tenantDomain.phone,
+      //   id: tenantDomain.id,
+      // });
+      await this.accountCommand.handleRestoreAccount({
+        phoneNumber: tenantDomain.phone,
         id: tenantDomain.id,
-      });
+       })
     }
     return TenantResponse.toResponse(tenantDomain);
   }
@@ -195,8 +216,12 @@ export class TenantCommand {
           `${process.env.UPLOADED_FILES_DESTINATION}/${tenantDomain.logo.name}`,
         );
       }
-      this.eventEmitter.emit('account.deleted', {
-        phone: tenantDomain.phone,
+      // this.eventEmitter.emit('account.deleted', {
+      //   phone: tenantDomain.phone,
+      //   id: tenantDomain.id,
+      // });
+      await this.accountCommand.handleDeleteAccount({
+        phoneNumber: tenantDomain.phone,
         id: tenantDomain.id,
       });
     }
@@ -215,10 +240,14 @@ export class TenantCommand {
     tenant.logo = logo;
     const result = await this.tenantRepository.save(tenant);
     if (result) {
-      this.eventEmitter.emit('update-account-profile', {
-        id: result.id,
-        profilePicture: result.logo,
-      });
+      // this.eventEmitter.emit('update-account-profile', {
+      //   id: result.id,
+      //   profilePicture: result.logo,
+      // });
+       await this.accountCommand.updateAccountProfile({
+         id: result.id,
+         profilePicture: result.logo,
+       });
     }
     return TenantResponse.toResponse(result);
   }

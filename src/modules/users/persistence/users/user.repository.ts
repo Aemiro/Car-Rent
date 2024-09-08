@@ -8,8 +8,8 @@ import { UserEntity } from './user.entity';
 export class UserRepository extends BaseRepository<UserEntity> {
   constructor(
     @InjectRepository(UserEntity)
-    repository: Repository<UserEntity>,
+    private readonly userRepository: Repository<UserEntity>,
   ) {
-    super(repository);
+    super(userRepository);
   }
 }

@@ -12,7 +12,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { UserInfo } from '@lib/common/user-info';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Util } from '@lib/common/util';
 import { CreateAccountCommand } from '@auth/usecases/accounts/account.commands';
 import {
@@ -20,11 +19,12 @@ import {
   UpdateUserDocumentCommand,
   RemoveUserDocumentCommand,
 } from './user-document.command';
+import { AccountCommand } from '@auth/usecases/accounts/account.usecase.commands';
 @Injectable()
-export class UserCommand {
+export class UserCommand  {
   constructor(
     private readonly userRepository: UserRepository,
-    private eventEmitter: EventEmitter2,
+    private readonly accountCommand: AccountCommand,
   ) {}
   async createUser(command: CreateUserCommand): Promise<UserResponse> {
     if (await this.userRepository.getOneBy('phone', command.phone, [], true)) {
@@ -60,8 +60,8 @@ export class UserCommand {
       createAccountCommand.address = command.address;
       createAccountCommand.gender = command.gender;
       createAccountCommand.password = Util.hashPassword(password);
-      this.eventEmitter.emit('create.account', createAccountCommand);
-
+      // this.eventEmitter.emit('create.account', createAccountCommand);
+      await this.accountCommand.createAccount(createAccountCommand);
       // if (account && account.email) {
       //   this.eventEmitter.emit('send.email.credential', {
       //     name: account.name,
@@ -114,15 +114,25 @@ export class UserCommand {
     const fullName = `${command.firstName} ${command.middleName}`;
 
     if (user) {
-      this.eventEmitter.emit('update.account', {
+      // this.eventEmitter.emit('update.account', {
+      //   accountId: user.id,
+      //   name: fullName,
+      //   email: user.email,
+      //   type: 'Employee',
+      //   phone: user.phone,
+      //   address: user.address,
+      //   gender: user.gender,
+      //   profilePicture: user.profilePicture,
+      // });
+      await this.accountCommand.updateAccount({
         accountId: user.id,
         name: fullName,
         email: user.email,
-        type: 'Employee',
         phone: user.phone,
         address: user.address,
         gender: user.gender,
         profilePicture: user.profilePicture,
+        isActive: user.isActive,
       });
     }
     return UserResponse.toResponse(user);
@@ -136,8 +146,12 @@ export class UserCommand {
     userDomain.deletedBy = command?.currentUser?.id;
     const result = await this.userRepository.save(userDomain);
     if (result) {
-      this.eventEmitter.emit('account.archived', {
-        phone: userDomain.phone,
+      // this.eventEmitter.emit('account.archived', {
+      //   phone: userDomain.phone,
+      //   id: userDomain.id,
+      // });
+      await this.accountCommand.handleArchiveAccount({
+        phoneNumber: userDomain.phone,
         id: userDomain.id,
       });
     }
@@ -152,8 +166,12 @@ export class UserCommand {
     const r = await this.userRepository.restore(id);
     if (r) {
       userDomain.deletedAt = null;
-      this.eventEmitter.emit('account.restored', {
-        phone: userDomain.phone,
+      // this.eventEmitter.emit('account.restored', {
+      //   phone: userDomain.phone,
+      //   id: userDomain.id,
+      // });
+      await this.accountCommand.handleRestoreAccount({
+        phoneNumber: userDomain.phone,
         id: userDomain.id,
       });
     }
@@ -171,8 +189,12 @@ export class UserCommand {
           `${process.env.UPLOADED_FILES_DESTINATION}/${userDomain.profilePicture.name}`,
         );
       }
-      this.eventEmitter.emit('account.deleted', {
-        phone: userDomain.phone,
+      // this.eventEmitter.emit('account.deleted', {
+      //   phone: userDomain.phone,
+      //   id: userDomain.id,
+      // });
+      await this.accountCommand.handleDeleteAccount({
+        phoneNumber: userDomain.phone,
         id: userDomain.id,
       });
     }
@@ -189,8 +211,12 @@ export class UserCommand {
     userDomain.isActive = !userDomain.isActive;
     const result = await this.userRepository.save(userDomain);
     if (result) {
-      this.eventEmitter.emit('account.activate-or-block', {
-        phone: userDomain.phone,
+      // this.eventEmitter.emit('account.activate-or-block', {
+      //   phone: userDomain.phone,
+      //   id: userDomain.id,
+      // });
+      await this.accountCommand.activateOrBlockAccount({
+        phoneNumber: userDomain.phone,
         id: userDomain.id,
       });
     }
@@ -214,7 +240,11 @@ export class UserCommand {
     userDomain.profilePicture = profileImage;
     const result = await this.userRepository.save(userDomain);
     if (result) {
-      this.eventEmitter.emit('update-account-profile', {
+      // this.eventEmitter.emit('update-account-profile', {
+      //   id: result.id,
+      //   profilePicture: result.profilePicture,
+      // });
+      await this.accountCommand.updateAccountProfile({
         id: result.id,
         profilePicture: result.profilePicture,
       });

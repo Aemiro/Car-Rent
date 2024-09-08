@@ -15,11 +15,13 @@ import { TenantQuery } from './usecases/tenants/tenant.usecase.query';
 import { TenantController } from './controllers/tenant.controller';
 import { PaymentController } from './controllers/payment.controller';
 import { ContractController } from './controllers/contract.controller';
+import { AuthModule } from '@auth/auth.module';
 
 @Module({
   controllers: [TenantController, PaymentController, ContractController],
   imports: [
     TypeOrmModule.forFeature([TenantEntity, PaymentEntity, ContractEntity]),
+    AuthModule,
   ],
   providers: [
     TenantRepository,

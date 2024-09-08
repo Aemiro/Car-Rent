@@ -10,11 +10,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AccountRepository } from 'modules/auth/persistence/accounts/account.repository';
 import { UserRoleEntity } from 'modules/auth/persistence/accounts/user-role.entity';
 import { Repository } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 import { RoleQuery } from '../roles/role.usecase.query';
 import { RoleRepository } from 'modules/auth/persistence/roles/role.repository';
 import { CreateAccountCommand, UpdateAccountCommand } from './account.commands';
-import { Util } from '@lib/common/util';
 import { UserRoleResponse } from './user-role.response';
 import { CollectionQuery } from '@lib/collection-query/collection-query';
 import { FilterOperators } from '@lib/collection-query/filter_operators';
@@ -43,8 +41,11 @@ export class AccountCommand {
       accountDomain.phone,
       true,
     );
+    console.log(existingAccount);
     if (!existingAccount) {
       const account = await this.accountRepository.insert(accountDomain);
+      console.log('account', account);
+
       if (account.type !== 'Employee') {
         let role = await this.roleRepository.getOneBy('key', account.type);
         if (!role) {
@@ -148,30 +149,6 @@ export class AccountCommand {
       account.isActive = !account.isActive;
       // console.log(account.isActive);
       await this.accountRepository.update(account);
-    }
-  }
-  @OnEvent('account.create-super-admin')
-  async createDefaultSupperAdminAccount(data: any) {
-    try {
-      const command: CreateAccountCommand = {
-        accountId: uuidv4(),
-        email: 'admin@gmail.co',
-        type: 'Employee',
-        name: 'Super Admin',
-        isActive: true,
-        password: Util.hashPassword('P@ssw0rd'),
-        phone: '+251960007700',
-        gender: 'female',
-      };
-      const accountDomain = CreateAccountCommand.toEntity(command);
-      const superAccount = await this.accountRepository.insert(accountDomain);
-      const accountRoleCommand: CreateAccountRolesCommand = {
-        accountId: superAccount.id,
-        roles: [data.roleId],
-      };
-      await this.seedAccountRole(accountRoleCommand);
-    } catch (error) {
-      // console.log(error.message);
     }
   }
   // @OnEvent('send.email.credential')
