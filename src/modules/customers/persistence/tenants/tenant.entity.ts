@@ -4,7 +4,7 @@ import { FileDto } from '@lib/common/file-dto';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { TenantContactEntity } from './tenant-contact.entity';
 import { ContractEntity } from '../contracts/contract.entity';
-import { PaymentEntity } from '../payments/payment.entity';
+import { PaymentEntity } from '../../../finances/persistence/payments/payment.entity';
 import { TenantDocumentEntity } from './tenant-document.entity';
 @Entity('tenants')
 export class TenantEntity extends CommonEntity {

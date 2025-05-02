@@ -10,6 +10,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { UserInfo } from '@lib/common/user-info';
 import { Util } from '@lib/common/util';
@@ -20,12 +21,48 @@ import {
   RemoveUserDocumentCommand,
 } from './user-document.command';
 import { AccountCommand } from '@auth/usecases/accounts/account.usecase.commands';
+import { UserEntity } from '@user/persistence/users/user.entity';
 @Injectable()
-export class UserCommand  {
+export class UserCommand implements OnModuleInit {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly accountCommand: AccountCommand,
   ) {}
+  async onModuleInit() {
+    const existingAdmin = await this.userRepository.getOneBy(
+      'email',
+      'admin@gmail.com',
+      [],
+      true,
+    );
+    if (!existingAdmin) {
+      const defaultAdmin = new UserEntity();
+      defaultAdmin.firstName = 'Supper';
+      defaultAdmin.middleName = 'Admin';
+
+      defaultAdmin.email = 'admin@gmail.com';
+      defaultAdmin.phone = '+251911111111';
+      defaultAdmin.isActive = true;
+      defaultAdmin.jobTitle = 'Admin';
+      defaultAdmin.gender = 'Male';
+      const user = await this.userRepository.insert(defaultAdmin);
+      const fullName = `${user.firstName} ${user.middleName}`;
+      const createAccountCommand = new CreateAccountCommand();
+      createAccountCommand.email = user.email;
+      createAccountCommand.phone = user.phone;
+      createAccountCommand.name = fullName;
+      createAccountCommand.accountId = user.id;
+      createAccountCommand.type = 'Employee';
+      createAccountCommand.isActive = true;
+      createAccountCommand.address = user.address;
+      createAccountCommand.gender = user.gender;
+      createAccountCommand.password = Util.hashPassword('P@ssw0rd');
+      // this.eventEmitter.emit('create.account', createAccountCommand);
+      await this.accountCommand.createAccount(createAccountCommand);
+
+      console.log('Inserted User ', user);
+    }
+  }
   async createUser(command: CreateUserCommand): Promise<UserResponse> {
     if (await this.userRepository.getOneBy('phone', command.phone, [], true)) {
       throw new BadRequestException(

@@ -25,7 +25,7 @@
       "@setting/*": ["modules/settings/*"],
       "@customer/*": ["modules/customers/*"],
       "@asset/*": ["modules/assets/*"],
-      "@notification/*": ["modules/notifications/*"],
+      "@interaction/*": ["modules/interactions/*"],
       "@auth/*": ["modules/auth/*"]
     }
   }

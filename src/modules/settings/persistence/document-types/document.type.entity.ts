@@ -1,6 +1,6 @@
 import { VehicleDocumentEntity } from '@asset/persistence/vehicles/vehicle-document.entity';
 import { ContractDocumentEntity } from '@customer/persistence/contracts/contract-document.entity';
-import { PaymentDocumentEntity } from '@customer/persistence/payments/payment-document.entity';
+import { PaymentDocumentEntity } from '@finance/persistence/payments/payment-document.entity';
 import { CommonEntity } from '@lib/common/common.entity';
 import { UserDocumentEntity } from '@user/persistence/users/user-document.entity';
 import { Column, Entity, OneToMany } from 'typeorm';

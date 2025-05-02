@@ -3,7 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { VehicleStatus } from 'modules/assets/enum';
 import { VehicleTypeEntity } from '../vehicle-types/vehicle.type.entity';
 import { VehicleDocumentEntity } from './vehicle-document.entity';
-import { PaymentEntity } from '@customer/persistence/payments/payment.entity';
+import { PaymentEntity } from '@finance/persistence/payments/payment.entity';
 import { MaintenanceEntity } from '../maintenances/maintenance.entity';
 import { PreventiveMaintenancePlanEntity } from '../preventive-maintenance-plans/preventive-maintenance-plan.entity';
 import { MaintenanceAlertEntity } from '../maintenance-alerts/maintenance-alert.entity';

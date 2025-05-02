@@ -20,12 +20,19 @@ import { ExpenseCommand } from './usecases/expenses/expense.usecase.command';
 import { ExpenseQuery } from './usecases/expenses/expense.usecase.query';
 import { RevenueCommand } from './usecases/revenues/revenue.usecase.command';
 import { RevenueQuery } from './usecases/revenues/revenue.usecase.query';
+import { StripeService } from './usecases/stripes/stripe.service';
+import { PaymentController } from '@finance/controllers/payment.controller';
+import { PaymentEntity } from './persistence/payments/payment.entity';
+import { PaymentRepository } from './persistence/payments/payment.repository';
+import { PaymentCommand } from './usecases/payments/payment.usecase.command';
+import { PaymentQuery } from './usecases/payments/payment.usecase.query';
 @Module({
   controllers: [
     RevenueSourceController,
     ExpenseTypeController,
     RevenueController,
     ExpenseController,
+    PaymentController,
   ],
   imports: [
     TypeOrmModule.forFeature([
@@ -33,6 +40,7 @@ import { RevenueQuery } from './usecases/revenues/revenue.usecase.query';
       ExpenseTypeEntity,
       RevenueEntity,
       ExpenseEntity,
+      PaymentEntity,
     ]),
   ],
   providers: [
@@ -49,6 +57,10 @@ import { RevenueQuery } from './usecases/revenues/revenue.usecase.query';
     ExpenseRepository,
     ExpenseCommand,
     ExpenseQuery,
+    StripeService,
+    PaymentRepository,
+    PaymentCommand,
+    PaymentQuery,
   ],
 })
 export class FinanceModule {}
