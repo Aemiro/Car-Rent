@@ -1,4 +1,4 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 import { NotificationEntity } from '../../persistence/notifications/notification.entity';
 import { UserInfo } from '@lib/common/user-info';
@@ -24,7 +24,6 @@ export class CreateNotificationCommand {
     entity.receiverId = command.receiverId;
     entity.receiverName = command.receiverName;
     entity.receiverType = command.receiverType;
-
     entity.message = command.message;
     entity.notificationType = command.notificationType;
     entity.createdBy = command?.currentUser?.id;

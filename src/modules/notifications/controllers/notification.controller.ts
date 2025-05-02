@@ -25,11 +25,10 @@ import { UserInfo } from '@lib/common/user-info';
 import {
   CreateNotificationCommand,
   ArchiveNotificationCommand,
-} from '@notification/usecases/notifications/notification.commands';
-import { NotificationResponse } from '@notification/usecases/notifications/notification.response';
-import { NotificationCommand } from '@notification/usecases/notifications/notification.usecase.command';
-import { NotificationQuery } from '@notification/usecases/notifications/notification.usecase.query';
-
+} from '@interaction/usecases/notifications/notification.commands';
+import { NotificationResponse } from '@interaction/usecases/notifications/notification.response';
+import { NotificationCommand } from '@interaction/usecases/notifications/notification.usecase.command';
+import { NotificationQuery } from '@interaction/usecases/notifications/notification.usecase.query';
 @Controller('notifications')
 @ApiTags('notifications')
 @ApiResponse({ status: 500, description: 'Internal error' })
