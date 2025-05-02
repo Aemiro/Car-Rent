@@ -2,7 +2,7 @@ import { CommonEntity } from '@lib/common/common.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { TenantEntity } from '../tenants/tenant.entity';
 import { ContractDocumentEntity } from './contract-document.entity';
-import { PaymentEntity } from '../payments/payment.entity';
+import { PaymentEntity } from '../../../finances/persistence/payments/payment.entity';
 import { VehicleEntity } from '@asset/persistence/vehicles/vehicle.entity';
 @Entity('contracts')
 export class ContractEntity extends CommonEntity {

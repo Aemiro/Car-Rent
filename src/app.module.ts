@@ -7,7 +7,7 @@ import { UserEntity } from '@user/persistence/users/user.entity';
 import { UserModule } from '@user/user.module';
 import { TenantEntity } from '@customer/persistence/tenants/tenant.entity';
 import { TenantContactEntity } from '@customer/persistence/tenants/tenant-contact.entity';
-import { PaymentEntity } from '@customer/persistence/payments/payment.entity';
+import { PaymentEntity } from '@finance/persistence/payments/payment.entity';
 import { CustomerModule } from '@customer/customer.module';
 import { MulterModule } from '@nestjs/platform-express';
 import * as dotenv from 'dotenv';
@@ -24,19 +24,20 @@ import { DocumentTypeEntity } from '@setting/persistence/document-types/document
 import { VehicleDocumentEntity } from '@asset/persistence/vehicles/vehicle-document.entity';
 import { UserDocumentEntity } from '@user/persistence/users/user-document.entity';
 import { ContractDocumentEntity } from '@customer/persistence/contracts/contract-document.entity';
-import { PaymentDocumentEntity } from '@customer/persistence/payments/payment-document.entity';
+import { PaymentDocumentEntity } from '@finance/persistence/payments/payment-document.entity';
 import { MaintenanceEntity } from '@asset/persistence/maintenances/maintenance.entity';
 import { PreventiveMaintenancePlanEntity } from '@asset/persistence/preventive-maintenance-plans/preventive-maintenance-plan.entity';
 import { MaintenanceAlertEntity } from '@asset/persistence/maintenance-alerts/maintenance-alert.entity';
 import { MaintenanceDocumentEntity } from '@asset/persistence/maintenances/maintenance-document.entity';
 import { TenantDocumentEntity } from '@customer/persistence/tenants/tenant-document.entity';
-import { NotificationModule } from '@notification/notification.module';
-import { NotificationEntity } from '@notification/persistence/notifications/notification.entity';
 import { RevenueSourceEntity } from '@finance/persistence/revenue-sources/revenue-source.entity';
 import { ExpenseTypeEntity } from '@finance/persistence/expense-types/expense-type.entity';
 import { FinanceModule } from '@finance/finance.module';
 import { RevenueEntity } from '@finance/persistence/revenues/revenue.entity';
 import { ExpenseEntity } from '@finance/persistence/expenses/expense.entity';
+import { FeedbackEntity } from '@interaction/persistence/feedbacks/feedback.entity';
+import { NotificationEntity } from '@interaction/persistence/notifications/notification.entity';
+import { InteractionModule } from '@interaction/interaction.module';
 dotenv.config({ path: '.env' });
 @Module({
   imports: [
@@ -46,7 +47,6 @@ dotenv.config({ path: '.env' });
       dest: process.env.UPLOADED_FILES_DESTINATION,
     }),
     TypeOrmModule.forRoot({
-      // url: process.env.DB_URL,
       type: 'postgres',
       host: process.env.DATABASE_HOST,
       username: process.env.DATABASE_USERNAME,
@@ -54,15 +54,6 @@ dotenv.config({ path: '.env' });
       database: process.env.DATABASE_NAME,
       schema: process.env.DATABASE_SCHEMA,
       port: parseInt(process.env.DATABASE_PORT),
-      // ssl: true,
-      extra: {
-        ssl: {
-          rejectUnauthorized: false,
-
-          // ca: fs.readFileSync('ca.pem').toString(),
-          ca: process.env.DBSSL_CERT,
-        },
-      },
       entities: [
         UserEntity,
         RoleEntity,
@@ -90,8 +81,9 @@ dotenv.config({ path: '.env' });
         ExpenseTypeEntity,
         RevenueEntity,
         ExpenseEntity,
+        FeedbackEntity,
       ],
-      // synchronize: process.env.NODE_ENV === 'production' ? false : true,
+      synchronize: process.env.NODE_ENV === 'production' ? false : true,
       logging: process.env.NODE_ENV === 'production' ? false : true,
     }),
     UserModule,
@@ -99,10 +91,22 @@ dotenv.config({ path: '.env' });
     AuthModule,
     SettingModule,
     AssetModule,
-    NotificationModule,
+    InteractionModule,
     FinanceModule,
   ],
   controllers: [AppController],
   providers: [],
 })
-export class AppModule {}
+export class AppModule {
+  constructor() {
+    // console.log(fs.readFileSync('ca.pem').toString());
+    console.log({
+      host: process.env.DATABASE_HOST,
+      username: process.env.DATABASE_USERNAME,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME,
+      schema: process.env.DATABASE_SCHEMA,
+      port: parseInt(process.env.DATABASE_PORT),
+    });
+  }
+}
