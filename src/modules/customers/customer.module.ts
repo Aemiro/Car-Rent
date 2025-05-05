@@ -11,12 +11,16 @@ import { TenantQuery } from './usecases/tenants/tenant.usecase.query';
 import { TenantController } from './controllers/tenant.controller';
 import { ContractController } from './controllers/contract.controller';
 import { AuthModule } from '@auth/auth.module';
+import { StripeModule } from '@infrastructure/stripe/stripe.module';
+import { AssetModule } from '@asset/asset.module';
 
 @Module({
   controllers: [TenantController, ContractController],
   imports: [
     TypeOrmModule.forFeature([TenantEntity, ContractEntity]),
     AuthModule,
+    StripeModule,
+    AssetModule
   ],
   providers: [
     TenantRepository,

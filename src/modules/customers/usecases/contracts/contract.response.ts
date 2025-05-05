@@ -17,9 +17,11 @@ export class ContractResponse {
   @ApiProperty()
   paymentFrequency: string;
   @ApiProperty()
-  totalPrice: number;
+  price: number;
   @ApiProperty()
   status: string;
+  @ApiProperty()
+  stripePriceId: string;
   @ApiProperty()
   remark: string;
   @ApiProperty()
@@ -45,7 +47,8 @@ export class ContractResponse {
     response.startDate = entity.startDate;
     response.endDate = entity.endDate;
     response.paymentFrequency = entity.paymentFrequency;
-    response.totalPrice = entity.totalPrice;
+    response.stripePriceId = entity.stripePriceId;
+    response.price = entity.price;
     response.status = entity.status;
     response.remark = entity.remark;
     response.createdBy = entity.createdBy;

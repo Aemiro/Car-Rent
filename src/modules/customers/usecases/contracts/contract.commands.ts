@@ -1,7 +1,8 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ContractEntity } from '../../persistence/contracts/contract.entity';
 import { UserInfo } from '@lib/common/user-info';
+import { ContractStatus, PaymentFrequencyType } from '@customer/enums';
 
 export class CreateContractCommand {
   @ApiProperty()
@@ -11,17 +12,27 @@ export class CreateContractCommand {
   @IsNotEmpty()
   vehicleId: string;
   @ApiProperty()
-  @IsNotEmpty()
   startDate: Date;
   @ApiProperty()
   endDate: Date;
   @ApiProperty()
   @IsNotEmpty()
+  @IsEnum(PaymentFrequencyType, {
+    message: `Payment Frequency must be one of ${Object.keys(
+      PaymentFrequencyType,
+    ).toString()}`,
+  })
   paymentFrequency: string;
   @ApiProperty()
-  totalPrice: number;
+  @IsNotEmpty()
+  price: number;
   @ApiProperty()
   @IsNotEmpty()
+  @IsEnum(ContractStatus, {
+    message: `Payment Frequency must be one of ${Object.keys(
+      ContractStatus,
+    ).toString()}`,
+  })
   status: string;
   @ApiProperty()
   remark: string;
@@ -34,7 +45,7 @@ export class CreateContractCommand {
     entity.startDate = command.startDate;
     entity.endDate = command.endDate;
     entity.paymentFrequency = command.paymentFrequency;
-    entity.totalPrice = command.totalPrice;
+    entity.price = command.price;
     entity.remark = command.remark;
     entity.status = command.status;
     entity.tenantId = command?.currentUser?.tenantId;

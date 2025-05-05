@@ -3,11 +3,7 @@ import {
   CreateContractCommand,
   UpdateContractCommand,
 } from './contract.commands';
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ContractResponse } from './contract.response';
 import { ContractRepository } from '../../persistence/contracts/contract.repository';
 import { UserInfo } from '@lib/common/user-info';
@@ -16,17 +12,49 @@ import {
   UpdateContractDocumentCommand,
   RemoveContractDocumentCommand,
 } from './contract-document.command';
+import { StripeService } from '@infrastructure/stripe/stripe.service';
+import { ContractStatus } from '@customer/enums';
+import { VehicleRepository } from '@asset/persistence/vehicles/vehicle.repository';
 @Injectable()
 export class ContractCommand {
-  constructor(private readonly contractRepository: ContractRepository) {}
+  constructor(
+    private readonly contractRepository: ContractRepository,
+    private readonly vehicleRepository: VehicleRepository,
+    private readonly stripeService: StripeService,
+  ) {}
   async createContract(
     command: CreateContractCommand,
   ): Promise<ContractResponse> {
+    const vehicle = await this.vehicleRepository.getById(command.vehicleId);
+    if (!vehicle) {
+      throw new NotFoundException('Vehicle Not found');
+    }
     const contractDomain = CreateContractCommand.toEntity(command);
     contractDomain.createdBy = command?.currentUser?.id;
     contractDomain.updatedBy = command?.currentUser?.id;
     const contract = await this.contractRepository.insert(contractDomain);
 
+    if (contract.status === ContractStatus.ACTIVE && vehicle.stripeProductId) {
+      const priceNickname = this.generatePriceNickname({
+        plateNumber: vehicle.plateNumber,
+        model: vehicle.model,
+        billingPeriod: contract.paymentFrequency,
+        amount: contract.price,
+      });
+      const productPrice = await this.stripeService.createPrice(
+        vehicle.stripeProductId,
+        contract.price,
+        priceNickname,
+        {
+          contractId: contract.id,
+          tenantId: contract.tenantId,
+          vehicleId: contract.vehicleId,
+          paymentFrequency: contract.paymentFrequency,
+        },
+      );
+      contract.stripePriceId = productPrice.id;
+      await this.contractRepository.save(contract);
+    }
     return ContractResponse.toResponse(contract);
   }
   async updateContract(
@@ -36,15 +64,52 @@ export class ContractCommand {
     if (!contract) {
       throw new NotFoundException(`Contract not found with id ${command.id}`);
     }
+    const vehicle = await this.vehicleRepository.getById(command.vehicleId);
+    if (!vehicle) {
+      throw new NotFoundException('Vehicle Not found');
+    }
     contract.vehicleId = command.vehicleId;
     contract.tenantId = command.tenantId;
     contract.startDate = command.startDate;
     contract.endDate = command?.endDate ?? contract?.endDate;
     contract.paymentFrequency = command.paymentFrequency;
-    contract.totalPrice = command.totalPrice;
+    contract.price = command.price;
     contract.status = command.status;
     contract.remark = command.remark;
     contract.updatedBy = command?.currentUser?.id;
+    if (
+      contract.status !== command.status &&
+      command.status === ContractStatus.ACTIVE &&
+      vehicle.stripeProductId
+    ) {
+      const priceNickname = this.generatePriceNickname({
+        plateNumber: vehicle.plateNumber,
+        model: vehicle.model,
+        billingPeriod: contract.paymentFrequency,
+        amount: contract.price,
+      });
+      const productPrice = await this.stripeService.createPrice(
+        vehicle.stripeProductId,
+        contract.price,
+        priceNickname,
+        {
+          contractId: contract.id,
+          tenantId: contract.tenantId,
+          vehicleId: contract.vehicleId,
+          paymentFrequency: contract.paymentFrequency,
+        },
+      );
+      contract.stripePriceId = productPrice.id;
+    } else if (
+      contract.status !== command.status &&
+      command.status === ContractStatus.CANCELLED &&
+      vehicle.stripeProductId &&
+      contract.stripePriceId
+    ) {
+      await this.stripeService.updatePrice(contract.stripePriceId, {
+        active: false,
+      });
+    }
     const result = await this.contractRepository.save(contract);
     return ContractResponse.toResponse(result);
   }
@@ -125,5 +190,21 @@ export class ContractCommand {
     contract.removeDocument(document.id);
     const result = await this.contractRepository.save(contract);
     return ContractResponse.toResponse(result);
+  }
+  private generatePriceNickname({
+    plateNumber,
+    model,
+    billingPeriod,
+    amount,
+    currency = 'PLN',
+  }: {
+    plateNumber: string;
+    model: string;
+    billingPeriod: string;
+    amount: number;
+    currency?: string;
+  }) {
+    const cleanModel = model.replace(/\s+/g, '-').toLowerCase();
+    return `${plateNumber}-${cleanModel}-${billingPeriod}-${amount}${currency.toUpperCase()}`;
   }
 }

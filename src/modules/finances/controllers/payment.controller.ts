@@ -25,7 +25,7 @@ import {
   RemovePaymentDocumentCommand,
 } from '@finance/usecases/payments/payment-document.command';
 import { PaymentResponse } from '@finance/usecases/payments/payment.response';
-import { StripeService } from '@finance/usecases/stripes/stripe.service';
+import { StripeOldService } from '@finance/usecases/stripes/stripe.service.old';
 import { CreateCheckoutSessionCommand } from '@finance/usecases/stripes/stripe.command';
 import {
   Body,
@@ -52,7 +52,7 @@ export class PaymentController {
   constructor(
     private command: PaymentCommand,
     private paymentQuery: PaymentQuery,
-    private stripeService: StripeService,
+    private stripeService: StripeOldService,
   ) {}
   @Get('session-status')
   @AllowAnonymous()

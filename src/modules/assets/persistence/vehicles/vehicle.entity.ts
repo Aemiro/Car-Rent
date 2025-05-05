@@ -1,5 +1,12 @@
 import { CommonEntity } from '@lib/common/common.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { VehicleStatus } from 'modules/assets/enum';
 import { VehicleTypeEntity } from '../vehicle-types/vehicle.type.entity';
 import { VehicleDocumentEntity } from './vehicle-document.entity';
@@ -10,23 +17,34 @@ import { MaintenanceAlertEntity } from '../maintenance-alerts/maintenance-alert.
 import { ContractEntity } from '@customer/persistence/contracts/contract.entity';
 @Entity('vehicles')
 export class VehicleEntity extends CommonEntity {
+  @Index()
+  @Column({ name: 'plate_number', nullable: true })
+  plateNumber: string;
   @Column()
   make: string;
   @Column()
   model: string;
   @Column({ type: 'integer' })
   year: number;
-  @Column({ name: 'registration_number' })
+  @Column({ name: 'registration_number', nullable: true })
+  @Index()
   registrationNumber: string;
-  @Column()
+  @Column({ nullable: true })
+  @Index()
   vin: string;
   @Column({ name: 'engine_number', nullable: true })
+  @Index()
   engineNumber: string;
   @Column({ nullable: true })
   color: string;
   @Column({ name: 'vehicle_type_id', nullable: true })
   vehicleTypeId: string;
-
+  @Column({
+    nullable: true,
+    name: 'stripe_product_id',
+    comment: 'Stripe product ID linked to this vehicle',
+  })
+  stripeProductId: string;
   @Column({ name: 'monthly_rental_rate' })
   monthlyRentalRate: number;
   @Column({ name: 'weekly_rental_rate' })
@@ -42,6 +60,7 @@ export class VehicleEntity extends CommonEntity {
   @OneToMany(() => PaymentEntity, (payment) => payment.vehicle, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    eager: false,
   })
   payments: PaymentEntity[];
 

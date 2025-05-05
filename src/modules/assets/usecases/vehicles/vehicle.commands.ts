@@ -1,9 +1,13 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 import { UserInfo } from '@lib/common/user-info';
 import { VehicleEntity } from '@asset/persistence/vehicles/vehicle.entity';
+import { VehicleStatus } from '@asset/enum';
 
 export class CreateVehicleCommand {
+  @ApiProperty()
+  @IsNotEmpty()
+  plateNumber: string;
   @ApiProperty()
   @IsNotEmpty()
   model: string;
@@ -31,11 +35,17 @@ export class CreateVehicleCommand {
   @IsNotEmpty()
   weeklyRentalRate: number;
   @ApiProperty()
+  @IsEnum(VehicleStatus, {
+    message: `Vehicle status must be one of ${Object.keys(
+      VehicleStatus,
+    ).toString()}`,
+  })
   status: string;
   currentUser: UserInfo;
 
   static toEntity(command: CreateVehicleCommand): VehicleEntity {
     const entity = new VehicleEntity();
+    entity.plateNumber = command.plateNumber;
     entity.model = command.model;
     entity.make = command.make;
     entity.year = command.year;

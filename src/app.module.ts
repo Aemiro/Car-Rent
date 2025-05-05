@@ -38,6 +38,7 @@ import { ExpenseEntity } from '@finance/persistence/expenses/expense.entity';
 import { FeedbackEntity } from '@interaction/persistence/feedbacks/feedback.entity';
 import { NotificationEntity } from '@interaction/persistence/notifications/notification.entity';
 import { InteractionModule } from '@interaction/interaction.module';
+import { StripeModule } from '@infrastructure/stripe/stripe.module';
 dotenv.config({ path: '.env' });
 @Module({
   imports: [
@@ -93,13 +94,13 @@ dotenv.config({ path: '.env' });
     AssetModule,
     InteractionModule,
     FinanceModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [],
 })
 export class AppModule {
   constructor() {
-    // console.log(fs.readFileSync('ca.pem').toString());
     console.log({
       host: process.env.DATABASE_HOST,
       username: process.env.DATABASE_USERNAME,

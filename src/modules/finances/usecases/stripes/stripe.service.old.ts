@@ -3,7 +3,7 @@ import { Stripe } from 'stripe';
 import { CreateCheckoutSessionCommand } from './stripe.command';
 
 @Injectable()
-export class StripeService {
+export class StripeOldService {
   private stripe: Stripe;
 
   constructor() {
@@ -27,7 +27,7 @@ export class StripeService {
               },
               unit_amount: command.amount * 100, // Amount is in cents
             },
-            quantity: command.quantity??1, // Specify the quantity of the product
+            quantity: command.quantity ?? 1, // Specify the quantity of the product
           },
         ],
         // line_items: [

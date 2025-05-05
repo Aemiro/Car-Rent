@@ -25,6 +25,7 @@ import { VehicleTypeRepository } from './persistence/vehicle-types/vehicle-type.
 import { MaintenanceController } from './controllers/maintenance.controller';
 import { PreventiveMaintenancePlanController } from './controllers/preventive-maintenance-alert.controller';
 import { MaintenanceAlertController } from './controllers/maintenance-alert.controller';
+import { StripeModule } from '@infrastructure/stripe/stripe.module';
 @Module({
   controllers: [
     VehicleTypeController,
@@ -41,6 +42,7 @@ import { MaintenanceAlertController } from './controllers/maintenance-alert.cont
       PreventiveMaintenancePlanEntity,
       MaintenanceAlertEntity,
     ]),
+    StripeModule,
   ],
   providers: [
     VehicleTypeRepository,
@@ -59,5 +61,6 @@ import { MaintenanceAlertController } from './controllers/maintenance-alert.cont
     MaintenanceAlertCommand,
     MaintenanceAlertQuery,
   ],
+  exports: [VehicleRepository],
 })
 export class AssetModule {}

@@ -16,18 +16,50 @@ import {
   RemoveVehicleDocumentCommand,
   UpdateVehicleDocumentCommand,
 } from './vehicle-document.command';
+import { StripeService } from '@infrastructure/stripe/stripe.service';
 @Injectable()
 export class VehicleCommand {
-  constructor(private readonly vehicleRepository: VehicleRepository) {}
+  constructor(
+    private readonly vehicleRepository: VehicleRepository,
+    private readonly stripeService: StripeService,
+  ) {}
   async createVehicle(command: CreateVehicleCommand): Promise<VehicleResponse> {
     if (await this.vehicleRepository.getOneBy('vin', command.vin, [], true)) {
       throw new BadRequestException(`Vehicle already exist with this vin`);
+    }
+    if (
+      await this.vehicleRepository.getOneBy(
+        'plateNumber',
+        command.plateNumber,
+        [],
+        true,
+      )
+    ) {
+      throw new BadRequestException(
+        `Vehicle already exist with this plate number`,
+      );
     }
     const vehicleDomain = CreateVehicleCommand.toEntity(command);
     vehicleDomain.createdBy = command?.currentUser?.id;
     vehicleDomain.updatedBy = command?.currentUser?.id;
     const vehicle = await this.vehicleRepository.insert(vehicleDomain);
-
+    const productName = `${vehicle.make} ${vehicle.model} - ${vehicle.plateNumber}`;
+    const stripeProduct = await this.stripeService.createProduct(
+      productName,
+      productName,
+      {
+        vehicleId: vehicle.id,
+        plateNumber: vehicleDomain.plateNumber,
+        engineNumber: vehicleDomain.engineNumber,
+        vin: vehicleDomain.vin,
+        registrationNumber: vehicleDomain.registrationNumber,
+        color: vehicleDomain.color,
+        make: vehicleDomain.make,
+        model: vehicleDomain.model,
+      },
+    );
+    vehicle.stripeProductId = stripeProduct.id;
+    await this.vehicleRepository.save(vehicle);
     return VehicleResponse.toResponse(vehicle);
   }
   async updateVehicle(command: UpdateVehicleCommand): Promise<VehicleResponse> {
@@ -46,6 +78,19 @@ export class VehicleCommand {
         throw new BadRequestException(`Vehicle already exist with this vin`);
       }
     }
+    if (vehicle.plateNumber !== command.plateNumber) {
+      const user = await this.vehicleRepository.getOneBy(
+        'plateNumber',
+        command.plateNumber,
+        [],
+        true,
+      );
+      if (user) {
+        throw new BadRequestException(
+          `Vehicle already exist with this plateNumber`,
+        );
+      }
+    }
     vehicle.vin = command.vin;
     vehicle.make = command.make;
     vehicle.model = command.model;
@@ -56,9 +101,39 @@ export class VehicleCommand {
     vehicle.vehicleTypeId = command.vehicleTypeId;
     vehicle.monthlyRentalRate = command.monthlyRentalRate;
     vehicle.weeklyRentalRate = command.weeklyRentalRate;
+    vehicle.plateNumber = command.plateNumber;
     vehicle.status = command.status;
     vehicle.updatedBy = command?.currentUser?.id;
     const result = await this.vehicleRepository.save(vehicle);
+    const productName = `${vehicle.make} ${vehicle.model} - ${vehicle.plateNumber}`;
+
+    if (vehicle.stripeProductId) {
+      await this.stripeService.updateProduct(vehicle.stripeProductId, {
+        name: productName,
+        description: productName,
+        metadata: {
+          vehicleId: vehicle.id,
+          plateNumber: vehicle.plateNumber,
+          engineNumber: vehicle.engineNumber,
+          vin: vehicle.vin,
+          registrationNumber: vehicle.registrationNumber,
+          color: vehicle.color,
+          make: vehicle.make,
+          model: vehicle.model,
+        },
+      });
+    } else {
+      await this.stripeService.createProduct(productName, productName, {
+        vehicleId: vehicle.id,
+        plateNumber: vehicle.plateNumber,
+        engineNumber: vehicle.engineNumber,
+        vin: vehicle.vin,
+        registrationNumber: vehicle.registrationNumber,
+        color: vehicle.color,
+        make: vehicle.make,
+        model: vehicle.model,
+      });
+    }
     return VehicleResponse.toResponse(result);
   }
   async archiveVehicle(

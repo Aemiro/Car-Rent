@@ -20,7 +20,7 @@ import { ExpenseCommand } from './usecases/expenses/expense.usecase.command';
 import { ExpenseQuery } from './usecases/expenses/expense.usecase.query';
 import { RevenueCommand } from './usecases/revenues/revenue.usecase.command';
 import { RevenueQuery } from './usecases/revenues/revenue.usecase.query';
-import { StripeService } from './usecases/stripes/stripe.service';
+import { StripeOldService } from './usecases/stripes/stripe.service.old';
 import { PaymentController } from '@finance/controllers/payment.controller';
 import { PaymentEntity } from './persistence/payments/payment.entity';
 import { PaymentRepository } from './persistence/payments/payment.repository';
@@ -57,7 +57,7 @@ import { PaymentQuery } from './usecases/payments/payment.usecase.query';
     ExpenseRepository,
     ExpenseCommand,
     ExpenseQuery,
-    StripeService,
+    StripeOldService,
     PaymentRepository,
     PaymentCommand,
     PaymentQuery,

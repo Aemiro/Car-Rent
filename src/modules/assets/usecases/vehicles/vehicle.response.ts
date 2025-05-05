@@ -5,6 +5,8 @@ export class VehicleResponse {
   @ApiProperty()
   id: string;
   @ApiProperty()
+  plateNumber: string;
+  @ApiProperty()
   model: string;
   @ApiProperty()
   make: string;
@@ -41,6 +43,7 @@ export class VehicleResponse {
   static toResponse(entity: VehicleEntity): VehicleResponse {
     const response = new VehicleResponse();
     response.id = entity.id;
+    response.plateNumber = entity.plateNumber;
     response.model = entity.model;
     response.make = entity.make;
     response.year = entity.year;

@@ -28,7 +28,8 @@ export class TenantEntity extends CommonEntity {
   isActive: boolean;
   @Column({ nullable: true })
   website: string;
-
+  @Column({ nullable: true, name: 'stripe_customer_id' })
+  stripeCustomerId: string;
   @OneToMany(() => ContractEntity, (contract) => contract.tenant, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',

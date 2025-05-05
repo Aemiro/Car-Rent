@@ -4,25 +4,27 @@ import { TenantEntity } from '../tenants/tenant.entity';
 import { ContractDocumentEntity } from './contract-document.entity';
 import { PaymentEntity } from '../../../finances/persistence/payments/payment.entity';
 import { VehicleEntity } from '@asset/persistence/vehicles/vehicle.entity';
+import { ContractStatus, PaymentFrequencyType } from '@customer/enums';
 @Entity('contracts')
 export class ContractEntity extends CommonEntity {
   @Column({ name: 'tenant_id' })
   tenantId: string;
   @Column({ name: 'vehicle_id' })
   vehicleId: string;
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   startDate: Date;
   @Column({ type: 'date' })
   endDate: Date;
-  @Column({ name: 'payment_frequency' })
+  @Column({ name: 'payment_frequency', default: PaymentFrequencyType.WEEKLY })
   paymentFrequency: string;
-  @Column({ name: 'total_price' })
-  totalPrice: number;
-  @Column({ name: 'status', default: 'Active' })
+  @Column({ name: 'price' })
+  price: number;
+  @Column({ name: 'status', default: ContractStatus.PENDING })
   status: string;
   @Column({ name: 'remark', nullable: true, type: 'text' })
   remark: string;
-
+  @Column({ nullable: true, name: 'stripe_price_id' })
+  stripePriceId: string;
   @ManyToOne(() => TenantEntity, (tenant) => tenant.contracts, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
