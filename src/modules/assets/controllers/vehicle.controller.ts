@@ -58,6 +58,11 @@ export class VehicleController {
   async getVehicles(@Query() query: CollectionQuery) {
     return this.vehicleQuery.getVehicles(query);
   }
+  @Get('get-available-vehicles')
+  @ApiPaginatedResponse(VehicleResponse)
+  async getAvailableVehicles(@Query() query: CollectionQuery) {
+    return this.vehicleQuery.getAvailableVehicles(query);
+  }
   @Post()
   @ApiOkResponse({ type: VehicleResponse })
   async createVehicle(

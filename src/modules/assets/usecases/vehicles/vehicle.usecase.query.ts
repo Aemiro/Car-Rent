@@ -7,6 +7,7 @@ import { FilterOperators } from '@lib/collection-query/filter_operators';
 import { QueryConstructor } from '@lib/collection-query/query-constructor';
 import { DataResponseFormat } from '@lib/response-format/data-response-format';
 import { VehicleEntity } from '@asset/persistence/vehicles/vehicle.entity';
+import { VehicleStatus } from '@asset/enum';
 @Injectable()
 export class VehicleQuery {
   constructor(
@@ -34,6 +35,33 @@ export class VehicleQuery {
     if (!query.filter) {
       query.filter = [];
     }
+    const dataQuery = QueryConstructor.constructQuery<VehicleEntity>(
+      this.vehicleRepository,
+      query,
+    );
+    const d = new DataResponseFormat<VehicleResponse>();
+    if (query.count) {
+      d.total = await dataQuery.getCount();
+    } else {
+      const [result, total] = await dataQuery.getManyAndCount();
+      d.data = result.map((entity) => VehicleResponse.toResponse(entity));
+      d.total = total;
+    }
+    return d;
+  }
+  async getAvailableVehicles(
+    query: CollectionQuery,
+  ): Promise<DataResponseFormat<VehicleResponse>> {
+    if (!query.filter) {
+      query.filter = [];
+    }
+    query.filter.push([
+      {
+        field: 'status',
+        value: VehicleStatus.AVAILABLE,
+        operator: '=',
+      },
+    ]);
     const dataQuery = QueryConstructor.constructQuery<VehicleEntity>(
       this.vehicleRepository,
       query,

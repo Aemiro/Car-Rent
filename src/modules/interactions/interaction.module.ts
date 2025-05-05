@@ -9,10 +9,18 @@ import { FeedbackEntity } from './persistence/feedbacks/feedback.entity';
 import { FeedbackRepository } from './persistence/feedbacks/feedback.repository';
 import { FeedbackCommand } from './usecases/feedbacks/feedback.usecase.command';
 import { FeedbackQuery } from './usecases/feedbacks/feedback.usecase.query';
+import { FeedbackController } from './controllers/feedback.controller';
 
 @Module({
-  controllers: [NotificationController],
+  controllers: [NotificationController, FeedbackController],
   imports: [TypeOrmModule.forFeature([NotificationEntity, FeedbackEntity])],
-  providers: [NotificationRepository, NotificationCommand, NotificationQuery, FeedbackRepository, FeedbackCommand, FeedbackQuery],
+  providers: [
+    NotificationRepository,
+    NotificationCommand,
+    NotificationQuery,
+    FeedbackRepository,
+    FeedbackCommand,
+    FeedbackQuery,
+  ],
 })
 export class InteractionModule {}
